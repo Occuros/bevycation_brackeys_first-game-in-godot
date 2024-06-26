@@ -6,8 +6,6 @@ use crate::{Player};
 use crate::world::components::*;
 
 
-
-
 pub(crate) fn add_colliders_to_walls(
     mut commands: Commands,
     wall_query: Query<Entity, (Added<Wall>, Without<Collider>)>,
@@ -20,6 +18,7 @@ pub(crate) fn add_colliders_to_walls(
                     TransformBundle::from_transform(Transform::from_xyz(0.0, 0.0, 0.0)),
                     Collider::rectangle(16.0, 16.0),
                     RigidBody::Static,
+                    CollisionLayers::new(GamePhysicsLayer::Ground, [GamePhysicsLayer::Enemy, GamePhysicsLayer::Player])
                 ));
             });
     }
@@ -39,6 +38,7 @@ pub fn add_colliders_to_platforms(
                     Name::new("PlatformCollider"),
                     TransformBundle::from_transform(Transform::from_xyz(0.0, 4.0, 0.0)),
                     Collider::rectangle(32.0, 8.0),
+                    CollisionLayers::new(GamePhysicsLayer::Ground, [GamePhysicsLayer::Enemy, GamePhysicsLayer::Player])
                 ));
             });
     }
@@ -49,37 +49,44 @@ pub fn add_colliders_to_bridges(
     mut commands: Commands,
     platform_query: Query<(Entity, &TileEnumTags), (Added<Bridge>, Without<Collider>)>,
 ) {
+    let collision_layer = CollisionLayers::new(
+        GamePhysicsLayer::Ground,
+        [GamePhysicsLayer::Enemy, GamePhysicsLayer::Player]
+    );
+
     for (entity, enum_tag) in platform_query.iter() {
-        // let radius = 3.5;
         commands.entity(entity)
-            .insert(Name::new("Bridge"))
-            .insert(RigidBody::Kinematic)
-            .insert(Friction::new(1.0))
-            .insert(OneWayPlatform::default())
+            .insert((
+                Name::new("Bridge"),
+                RigidBody::Kinematic,
+                Friction::new(1.0),
+                OneWayPlatform::default(),
+            ))
             .with_children(|commands| {
                 if enum_tag.tags.contains(&"StartBridge".to_string()) {
                     commands.spawn((
                         TransformBundle::from_transform(Transform::from_xyz(0.0, 4.2, 0.0)
                             .with_rotation(Quat::from_rotation_z(-0.2))),
-                        Collider::rectangle(16.0, 4.0)
+                        Collider::rectangle(16.0, 4.0),
+                        collision_layer,
                     ));
-
                 } else if enum_tag.tags.contains(&"MiddleBridge".to_string()) {
                     commands.spawn((
                         TransformBundle::from_transform(Transform::from_xyz(0.0, 2.5, 0.0)),
-                        Collider::rectangle(16.0, 4.0)
+                        Collider::rectangle(16.0, 4.0),
+                        collision_layer,
                     ));
                 } else if enum_tag.tags.contains(&"EndBridge".to_string()) {
                     commands.spawn((
                         TransformBundle::from_transform(Transform::from_xyz(0.0, 4.2, 0.0)
                             .with_rotation(Quat::from_rotation_z(0.2))),
-                        Collider::rectangle(16.0, 4.0)
+                        Collider::rectangle(16.0, 4.0),
+                        collision_layer,
                     ));
                 }
             });
     }
 }
-
 
 
 pub fn one_way_platform_system(
@@ -209,13 +216,13 @@ pub fn move_platforms_system(
 pub fn kill_zone_system(
     mut commands: Commands,
     kill_zone_query: Query<&CollidingEntities, With<KillZone>>,
-    player_query: Query<Entity, With<Player>>
+    mut player_query: Query<(Entity, &mut CollisionLayers), With<Player>>,
 ) {
     for collisions in kill_zone_query.iter() {
         for other in collisions.iter() {
-            if player_query.contains(*other) {
-                commands.entity(*other).despawn_recursive();
-            }
+            let Ok((_, mut collision_layers)) = player_query.get_mut(*other) else { continue };
+            collision_layers.memberships = LayerMask::from(GamePhysicsLayer::Dead);
+            commands.entity(*other).insert(IsDead);
         }
     }
 }

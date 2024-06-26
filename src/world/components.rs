@@ -2,7 +2,20 @@ use bevy::prelude::*;
 use bevy::utils::HashSet;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_ecs_ldtk::utils::ldtk_pixel_coords_to_translation_pivoted;
-use bevy_xpbd_2d::prelude::{Collider, RigidBody, Sensor};
+use bevy_xpbd_2d::prelude::*;
+
+#[derive(PhysicsLayer)]
+pub enum GamePhysicsLayer {
+    Player, // Layer 0
+    Enemy,  // Layer 1
+    Ground, // Layer 2
+    KillZone,
+    Dead,
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
+pub struct IsDead;
+
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Component)]
 pub struct Wall;

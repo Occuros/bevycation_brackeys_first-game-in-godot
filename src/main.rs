@@ -2,25 +2,31 @@ mod character_controller;
 mod world;
 mod player;
 mod debugging;
+mod enemy;
 
 use bevy::prelude::*;
 use bevy::transform::TransformSystem;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_editor_pls::EditorPlugin;
+use bevy_spritesheet_animation::prelude::SpritesheetAnimationPlugin;
 use bevy_vector_shapes::prelude::*;
 use bevy_xpbd_2d::prelude::*;
 use crate::character_controller::CharacterControllerPlugin;
 use crate::debugging::DebuggingPlugin;
+use crate::enemy::EnemyPlugin;
 use crate::player::PlayerPlugin;
+use crate::world::components::IsDead;
 use crate::world::WorldPlugin;
 
 fn main() {
     App::new()
         .register_type::<EntityInstance>()
+        // .insert_resource(Gravity(Vec2::NEG_Y * 100.0))
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest())) // prevents blurry sprites
         .add_plugins(PhysicsPlugins::default())
         .add_plugins(Shape2dPlugin::default())
         .add_plugins(LdtkPlugin)
+        .add_plugins(SpritesheetAnimationPlugin)
         .insert_resource(LevelSelection::index(0))
         .insert_resource(LdtkSettings {
             level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation {
@@ -33,46 +39,21 @@ fn main() {
         .add_plugins(DebuggingPlugin)
         .add_plugins(CharacterControllerPlugin)
         .add_plugins(WorldPlugin)
-        .add_plugins(PlayerPlugin )
+        .add_plugins(PlayerPlugin)
+        .add_plugins(EnemyPlugin)
         .add_systems(Startup, setup)
-        .add_systems(Update, animate_sprite)
         .add_systems(Update, zoom_scale_system)
         .add_systems(PostUpdate, camera_follow_player_system.after(PhysicsSet::Sync).before(TransformSystem::TransformPropagate))
+        .insert_resource(Msaa::Off)
 
         .run();
 }
-
-#[derive(Component, Reflect)]
-struct AnimationIndices {
-    first: usize,
-    last: usize,
-}
-
-#[derive(Component, Deref, DerefMut)]
-struct AnimationTimer(Timer);
 
 #[derive(Component)]
 pub struct MainCamera;
 
 #[derive(Component, Reflect)]
 pub struct Player;
-
-
-fn animate_sprite(
-    time: Res<Time>,
-    mut query: Query<(&AnimationIndices, &mut AnimationTimer, &mut TextureAtlas)>,
-) {
-    for (indices, mut timer, mut atlas) in &mut query {
-        timer.tick(time.delta());
-        if timer.just_finished() {
-            atlas.index = if atlas.index == indices.last {
-                indices.first
-            } else {
-                atlas.index + 1
-            };
-        }
-    }
-}
 
 fn setup(
     mut commands: Commands,
@@ -93,20 +74,10 @@ fn setup(
         Camera2dBundle::default(),
         MainCamera,
     ));
-
-
-
-
-    // painter.transform.translation.y -= 10.0;
-    // painter.rect(Vec2::new(500.0, 20.0))
-    //     .insert(Name::new("Floor"))
-    //     .insert(Transform::from_translation(-Vec3::Y * 100.0))
-    //     .insert(Collider::rectangle(500.0, 20.0))
-    //     .insert(RigidBody::Static);
 }
 
 pub fn camera_follow_player_system(
-    q_player: Query<&Transform, With<Player>>,
+    q_player: Query<&Transform, (With<Player>, Without<IsDead>)>,
     mut q_camera: Query<&mut Transform, (With<MainCamera>, Without<Player>)>,
 ) {
     let Ok(player_transform) = q_player.get_single() else { return; };

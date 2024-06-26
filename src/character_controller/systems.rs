@@ -6,25 +6,9 @@ use leafwing_input_manager::action_state::ActionState;
 use crate::character_controller::components::{AirAcceleration, AirDampingFactor, CharacterController, Grounded, JumpImpulse, MaxSlopeAngle, MovementAcceleration, MovementDampingFactor};
 use crate::Player;
 use crate::player::components::PlayerAction;
-use crate::world::components::PassThroughOneWayPlatform;
+use crate::world::components::{IsDead, PassThroughOneWayPlatform};
 
-pub fn flip_player_based_on_movement(
-    player_query: Query<(Entity, &LinearVelocity), With<Player>>,
-    children: Query<&Children>,
-    mut sprite_query: Query<&mut Sprite>,
-) {
-    let Ok((player_entity, linear_velocity)) = player_query.get_single() else {return};
 
-    for c in children.iter_descendants(player_entity) {
-        let Ok(mut sprite) = sprite_query.get_mut(c) else {continue};
-        if linear_velocity.x < 0.0 {
-            sprite.flip_x = true
-        } else if linear_velocity.x > 0.0 {
-            sprite.flip_x = false
-        }
-
-    }
-}
 
 /// Updates the [`Grounded`] status for character controllers.
 pub fn update_grounded(
@@ -63,7 +47,7 @@ pub fn movement(
         &JumpImpulse,
         &mut LinearVelocity,
         Has<Grounded>,
-    )>,
+    ), Without<IsDead>>,
 ) {
     // Precision is adjusted so that the example works with
     // both the `f32` and `f64` features. Otherwise you don't need this.

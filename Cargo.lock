@@ -1073,6 +1073,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_spritesheet_animation"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "675674e36d6d5d730d5f7b888c9b09f35bde7dd0cc2c8a9859f5523bbde2db84"
+dependencies = [
+ "bevy",
+ "itertools",
+ "visibility",
+]
+
+[[package]]
 name = "bevy_tasks"
 version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1290,6 +1301,7 @@ dependencies = [
  "bevy_collider_gen",
  "bevy_ecs_ldtk",
  "bevy_editor_pls",
+ "bevy_spritesheet_animation",
  "bevy_vector_shapes",
  "bevy_xpbd_2d",
  "leafwing-input-manager",
@@ -4381,6 +4393,17 @@ name = "version_check"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
+
+[[package]]
+name = "visibility"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b3fd98999db9227cf28e59d83e1f120f42bc233d4b152e8fab9bc87d5bb1e0f8"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.67",
+]
 
 [[package]]
 name = "walkdir"

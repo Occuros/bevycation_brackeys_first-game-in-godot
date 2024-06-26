@@ -15,7 +15,6 @@ impl Plugin for CharacterControllerPlugin {
                     update_grounded,
                     movement,
                     apply_movement_damping,
-                    flip_player_based_on_movement,
                     activate_pass_through_one_way_platform_system,
                 )
                     .chain(),

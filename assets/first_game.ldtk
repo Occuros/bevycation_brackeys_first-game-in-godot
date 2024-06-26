@@ -1835,7 +1835,7 @@
 		{
 			"__cWid": 6,
 			"__cHei": 5,
-			"identifier": "Slime_green",
+			"identifier": "Slime_green2",
 			"uid": 99,
 			"relPath": "sprites/slime_green.png",
 			"embedAtlas": null,
@@ -1966,9 +1966,9 @@
 							"defUid": 68,
 							"px": [912,576],
 							"fieldInstances": [
-								{ "__identifier": "path", "__type": "Array<Point>", "__value": [{ "cx": 49, "cy": 36 }], "__tile": null, "defUid": 79, "realEditorValues": [{
+								{ "__identifier": "path", "__type": "Array<Point>", "__value": [{ "cx": 48, "cy": 36 }], "__tile": null, "defUid": 79, "realEditorValues": [{
 									"id": "V_String",
-									"params": ["49,36"]
+									"params": ["48,36"]
 								}] },
 								{ "__identifier": "speed", "__type": "Float", "__value": 25, "__tile": null, "defUid": 80, "realEditorValues": [{ "id": "V_Float", "params": [25] }] }
 							],
@@ -2041,6 +2041,22 @@
 							"fieldInstances": [],
 							"__worldX": 704,
 							"__worldY": 416
+						},
+						{
+							"__identifier": "Slime",
+							"__grid": [32,30],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 99, "x": 48, "y": 0, "w": 16, "h": 16 },
+							"__smartColor": "#D77643",
+							"iid": "17020010-25d0-11ef-ba33-5713ee9b8054",
+							"width": 16,
+							"height": 16,
+							"defUid": 98,
+							"px": [512,480],
+							"fieldInstances": [],
+							"__worldX": 160,
+							"__worldY": 304
 						}
 					]
 				},

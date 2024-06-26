@@ -12,12 +12,14 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app
+            .init_resource::<PlayerAnimations>()
             .register_type::<InputMap<PlayerAction>>()
             .add_plugins(InputManagerPlugin::<PlayerAction>::default())
             .add_systems(Startup, player_setup_system)
             .add_systems(Update, spawn_player_system)
             .add_systems(Update, spawn_player_at_start_system)
             .add_systems(Update, spawn_player_on_input_system)
+            .add_systems(Update, player_animation_system)
         ;
     }
 }

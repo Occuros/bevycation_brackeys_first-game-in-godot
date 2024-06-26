@@ -1,17 +1,13 @@
-use bevy::asset::{Assets, AssetServer};
-use bevy::core::Name;
-use bevy::hierarchy::BuildChildren;
-use bevy::math::Vec2;
-use bevy::prelude::{Added, Commands, default, Entity, EventReader, EventWriter, GlobalTransform, InheritedVisibility, Query, Res, ResMut, SpriteSheetBundle, TextureAtlas, TextureAtlasLayout, Timer, TimerMode, Transform, TransformBundle, TransformHelper, With};
-use bevy_xpbd_2d::components::{CoefficientCombine, ColliderDensity, Friction, GravityScale, Restitution};
+use bevy::prelude::*;
+use bevy_spritesheet_animation::prelude::*;
 use bevy_xpbd_2d::math::Scalar;
-use bevy_xpbd_2d::prelude::Collider;
+use bevy_xpbd_2d::prelude::*;
 use leafwing_input_manager::action_state::ActionState;
 use leafwing_input_manager::InputManagerBundle;
-use crate::{AnimationIndices, AnimationTimer, Player};
-use crate::character_controller::components::CharacterControllerBundle;
-use crate::player::components::PlayerAction;
-use crate::world::components::{PassThroughOneWayPlatform, PlayerStartPoint, SpawnPlayerEvent};
+use crate::{Player};
+use crate::character_controller::components::*;
+use crate::player::components::*;
+use crate::world::components::*;
 
 
 pub fn player_setup_system(
@@ -24,7 +20,7 @@ pub fn player_setup_system(
 }
 
 pub fn spawn_player_on_input_system(
-    player_query: Query<(), With<Player>>,
+    player_query: Query<(), (With<Player>, Without<IsDead>)>,
     player_input_query: Query<&ActionState<PlayerAction>>,
     start_point_query: Query<&GlobalTransform, With<PlayerStartPoint>>,
     mut spawn_player_event: EventWriter<SpawnPlayerEvent>,
@@ -55,21 +51,20 @@ pub fn spawn_player_at_start_system(
 
 pub fn spawn_player_system(
     mut commands: Commands,
-    player_query: Query<Entity, With<Player>>,
+    player_query: Query<(Entity, Has<IsDead>), With<Player>>,
     mut player_spawn_event: EventReader<SpawnPlayerEvent>,
-    asset_server: Res<AssetServer>,
-    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+    player_animation: Res<PlayerAnimations>,
 ) {
     for spawn_event in player_spawn_event.read() {
-        if !player_query.is_empty() { return; }
-
-        let texture = asset_server.load("sprites/knight.png");
-        let layout = TextureAtlasLayout::from_grid(Vec2::new(32.0, 32.0), 8, 8, None, None);
-        let texture_atlas_layout = texture_atlas_layouts.add(layout);
-
+        if let Ok((player_entity, is_dead)) = player_query.get_single() {
+            if is_dead {
+                commands.entity(player_entity).despawn_recursive();
+            } else {
+                return;
+            }
+        }
 
         // Use only the subset of sprites in the sheet that make up the run animation
-        let animation_indices = AnimationIndices { first: 0, last: 3 };
         commands.spawn((
             TransformBundle::from_transform(
                 Transform::from_translation(spawn_event.translation),
@@ -90,22 +85,51 @@ pub fn spawn_player_system(
             ColliderDensity(2.0),
             GravityScale(100.0),
             PassThroughOneWayPlatform::ByNormal,
+            CollisionLayers::new(GamePhysicsLayer::Player, [GamePhysicsLayer::Enemy, GamePhysicsLayer::Ground, GamePhysicsLayer::KillZone])
         )).with_children(|commands| {
             commands.spawn((
                 SpriteSheetBundle {
-                    texture,
+                    texture: player_animation.texture.clone_weak(),
                     atlas: TextureAtlas {
-                        layout: texture_atlas_layout,
-                        index: animation_indices.first,
+                        layout: player_animation.layout.clone_weak(),
+                        ..default()
                     },
                     transform: Transform::from_xyz(0.0, 4.2, 0.0),
                     ..default()
                 },
-                animation_indices,
-                AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
+                SpritesheetAnimation::from_id(player_animation.idle_animation),
+                PlayerVisual,
+                Name::new("PlayerVisual")
             ));
         });
     }
 }
 
+pub fn player_animation_system(
+    player_query: Query<Has<Grounded>, With<Player>>,
+    player_animations: Res<PlayerAnimations>,
+    input_query: Query<&ActionState<PlayerAction>>,
+    mut player_visual_query: Query<(&mut Sprite, &mut SpritesheetAnimation), With<PlayerVisual>>,
+) {
+    let Ok(input) = input_query.get_single() else {return};
+    let Ok(grounded) = player_query.get_single() else {return};
+
+    let Ok((mut sprite, mut animation)) = player_visual_query.get_single_mut() else {return};
+    let move_direction = input.clamped_axis_pair(&PlayerAction::Move).unwrap().x();
+    if move_direction < 0.0 {
+        sprite.flip_x = true
+    } else if move_direction > 0.0 {
+        sprite.flip_x = false
+    }
+
+    if grounded {
+        if move_direction.abs() <= 0.01 {
+            animation.animation_id = player_animations.idle_animation;
+        } else {
+            animation.animation_id = player_animations.run_animation;
+        }
+    } else {
+        animation.animation_id = player_animations.jump_animation;
+    }
+}
 
