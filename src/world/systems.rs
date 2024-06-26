@@ -1,10 +1,14 @@
-use std::f32::consts::TAU;
 use bevy::prelude::*;
-use bevy_ecs_ldtk::TileEnumTags;
+use bevy_ecs_ldtk::{EntityInstance, TileEnumTags};
 use bevy_xpbd_2d::math::{Scalar, Vector};
 use bevy_xpbd_2d::prelude::*;
-use crate::{AnimationIndices, Player};
+use leafwing_input_manager::prelude::ActionState;
+use crate::{AnimationIndices, AnimationTimer, Player};
+use crate::character_controller::components::CharacterControllerBundle;
 use crate::world::components::*;
+
+
+
 
 pub(crate) fn add_colliders_to_walls(
     mut commands: Commands,
@@ -30,7 +34,7 @@ pub fn add_colliders_to_platforms(
 ) {
     for entity in platform_query.iter() {
         commands.entity(entity)
-            .insert(RigidBody::Static)
+            .insert(RigidBody::Kinematic)
             .insert(OneWayPlatform::default())
             .with_children(|commands| {
                 commands.spawn((
@@ -42,76 +46,42 @@ pub fn add_colliders_to_platforms(
     }
 }
 
+
 pub fn add_colliders_to_bridges(
     mut commands: Commands,
     platform_query: Query<(Entity, &TileEnumTags), (Added<Bridge>, Without<Collider>)>,
 ) {
-
-
-    // Use only the subset of sprites in the sheet that make up the run animation
-    let animation_indices = AnimationIndices { first: 0, last: 3 };
     for (entity, enum_tag) in platform_query.iter() {
-        info!("bridge: {:?}", enum_tag);
-        let radius = 4.0;
+        // let radius = 3.5;
         commands.entity(entity)
             .insert(Name::new("Bridge"))
             .insert(RigidBody::Kinematic)
+            .insert(Friction::new(1.0))
             .insert(OneWayPlatform::default())
             .with_children(|commands| {
                 if enum_tag.tags.contains(&"StartBridge".to_string()) {
                     commands.spawn((
-                        TransformBundle::from_transform(Transform::from_xyz(-4.0, 4.5, 0.0)),
-                        Collider::circle(radius),
+                        TransformBundle::from_transform(Transform::from_xyz(0.0, 4.2, 0.0)
+                            .with_rotation(Quat::from_rotation_z(-0.2))),
+                        Collider::rectangle(16.0, 4.0)
                     ));
-                    commands.spawn((
-                        TransformBundle::from_transform(Transform::from_xyz(4.0, 3.5, 0.0)),
-                        Collider::circle(radius),
-                    ));
-                }
-                else if enum_tag.tags.contains(&"MiddleBridge".to_string()) {
-                    // commands.spawn((
-                    //     TransformBundle::from_transform(Transform::from_xyz(-4.0, 2.5, 0.0)),
-                    //     Collider::circle(radius),
-                    // ));
-                    // commands.spawn((
-                    //     TransformBundle::from_transform(Transform::from_xyz(4.0, 2.5, 0.0)),
-                    //     Collider::circle(radius),
-                    // ));
+
+                } else if enum_tag.tags.contains(&"MiddleBridge".to_string()) {
                     commands.spawn((
                         TransformBundle::from_transform(Transform::from_xyz(0.0, 2.5, 0.0)),
                         Collider::rectangle(16.0, 4.0)
                     ));
                 } else if enum_tag.tags.contains(&"EndBridge".to_string()) {
                     commands.spawn((
-                        TransformBundle::from_transform(Transform::from_xyz(-4.0, 3.5, 0.0)),
-                        Collider::circle(radius),
-                    ));
-                    commands.spawn((
-                        TransformBundle::from_transform(Transform::from_xyz(4.0, 4.5, 0.0)),
-                        Collider::circle(radius),
+                        TransformBundle::from_transform(Transform::from_xyz(0.0, 4.2, 0.0)
+                            .with_rotation(Quat::from_rotation_z(0.2))),
+                        Collider::rectangle(16.0, 4.0)
                     ));
                 }
-
             });
     }
 }
 
-pub fn activate_pass_through_one_way_platform_system(
-    mut commands: Commands,
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut players: Query<(Entity, &mut PassThroughOneWayPlatform), With<Player>>,
-) {
-    for (entity, mut pass_through_one_way_platform) in &mut players {
-        if (keyboard_input.pressed(KeyCode::ArrowDown) || keyboard_input.pressed(KeyCode::KeyS)) && keyboard_input.just_pressed(KeyCode::Space) {
-            *pass_through_one_way_platform = PassThroughOneWayPlatform::Always;
-            // Wake up body when it's allowed to drop down.
-            // Otherwise it won't fall because gravity isn't simulated.
-            commands.entity(entity).remove::<Sleeping>();
-        } else {
-            *pass_through_one_way_platform = PassThroughOneWayPlatform::ByNormal;
-        }
-    }
-}
 
 
 pub fn one_way_platform_system(
@@ -202,4 +172,52 @@ pub fn one_way_platform_system(
             }
         }
     });
+}
+
+pub fn move_platforms_system(
+    mut platform_query: Query<(&mut Transform, &mut LinearVelocity, &mut Path), With<Platform>>
+) {
+    for (mut transform, mut linvel, mut path) in platform_query.iter_mut() {
+        if path.points.len() <= 1 { continue; };
+
+        let next_point = path.points[path.index];
+        let mut new_velocity =
+            (next_point - transform.translation.truncate()).normalize() * path.speed;
+
+        if new_velocity.dot(linvel.0) < 0. {
+            if path.index == 0 {
+                path.forward = true;
+            } else if path.index == path.points.len() - 1 {
+                path.forward = false;
+            }
+
+            transform.translation.x = path.points[path.index].x;
+            transform.translation.y = path.points[path.index].y;
+
+            if path.forward {
+                path.index += 1;
+            } else {
+                path.index -= 1;
+            }
+
+            new_velocity =
+                (path.points[path.index] - transform.translation.truncate()).normalize() * path.speed;
+        }
+
+        linvel.0 = new_velocity;
+    }
+}
+
+pub fn kill_zone_system(
+    mut commands: Commands,
+    kill_zone_query: Query<&CollidingEntities, With<KillZone>>,
+    player_query: Query<Entity, With<Player>>
+) {
+    for (collisions) in kill_zone_query.iter() {
+        for other in collisions.iter() {
+            if player_query.contains(*other) {
+                commands.entity(*other).despawn_recursive();
+            }
+        }
+    }
 }

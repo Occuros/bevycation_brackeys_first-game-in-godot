@@ -2,12 +2,6 @@ use bevy::prelude::*;
 use bevy_xpbd_2d::math::{PI, Scalar, Vector};
 use bevy_xpbd_2d::prelude::*;
 
-/// An event sent for a movement input action.
-#[derive(Event)]
-pub enum MovementAction {
-    Move(Scalar),
-    Jump,
-}
 
 /// A marker component indicating that an entity is using a character controller.
 #[derive(Component)]
