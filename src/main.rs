@@ -5,15 +5,11 @@ mod debugging;
 
 use bevy::prelude::*;
 use bevy::transform::TransformSystem;
-use bevy::utils::tracing::Instrument;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_editor_pls::EditorPlugin;
 use bevy_vector_shapes::prelude::*;
-use bevy_xpbd_2d::math::Scalar;
 use bevy_xpbd_2d::prelude::*;
-use leafwing_input_manager::prelude::*;
 use crate::character_controller::CharacterControllerPlugin;
-use crate::character_controller::components::*;
 use crate::debugging::DebuggingPlugin;
 use crate::player::PlayerPlugin;
 use crate::world::WorldPlugin;

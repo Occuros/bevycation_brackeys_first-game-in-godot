@@ -1,9 +1,7 @@
 use std::fmt::Debug;
-use bevy::prelude::{GamepadAxisType, GamepadButtonType, KeyCode, Reflect};
+use bevy::prelude::{KeyCode, Reflect};
 use leafwing_input_manager::Actionlike;
-use leafwing_input_manager::axislike::{DualAxis, SingleAxis, VirtualDPad};
 use leafwing_input_manager::input_map::InputMap;
-use leafwing_input_manager::prelude::InputKind;
 
 #[derive(Actionlike, PartialEq, Eq, Hash, Clone, Copy, Debug, Reflect)]
 pub enum DebugAction {

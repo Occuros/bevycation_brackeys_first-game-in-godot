@@ -1,10 +1,9 @@
 use bevy::asset::{Assets, AssetServer};
 use bevy::core::Name;
 use bevy::hierarchy::BuildChildren;
-use bevy::input::ButtonInput;
 use bevy::math::Vec2;
-use bevy::prelude::{Added, Commands, default, Entity, EventReader, EventWriter, GlobalTransform, InheritedVisibility, KeyCode, Query, Res, ResMut, SpriteSheetBundle, TextureAtlas, TextureAtlasLayout, Timer, TimerMode, Transform, TransformBundle, TransformHelper, With};
-use bevy_xpbd_2d::components::{CoefficientCombine, ColliderDensity, Friction, GravityScale, Restitution, Sleeping};
+use bevy::prelude::{Added, Commands, default, Entity, EventReader, EventWriter, GlobalTransform, InheritedVisibility, Query, Res, ResMut, SpriteSheetBundle, TextureAtlas, TextureAtlasLayout, Timer, TimerMode, Transform, TransformBundle, TransformHelper, With};
+use bevy_xpbd_2d::components::{CoefficientCombine, ColliderDensity, Friction, GravityScale, Restitution};
 use bevy_xpbd_2d::math::Scalar;
 use bevy_xpbd_2d::prelude::Collider;
 use leafwing_input_manager::action_state::ActionState;
@@ -42,11 +41,11 @@ pub fn spawn_player_on_input_system(
 
 pub fn spawn_player_at_start_system(
     helper: TransformHelper,
-    start_point_query: Query<Entity, (Added<PlayerStartPoint>)>,
+    start_point_query: Query<Entity, Added<PlayerStartPoint>>,
     mut spawn_player_event: EventWriter<SpawnPlayerEvent>,
 ) {
     let Ok(start_point_entity) = start_point_query.get_single() else { return };
-    /// at start the global transform is not propagated yet
+    // at start the global transform is not propagated yet
     let Ok(start_point) = helper.compute_global_transform(start_point_entity) else { return };
     spawn_player_event.send(SpawnPlayerEvent {
         translation: start_point.translation(),

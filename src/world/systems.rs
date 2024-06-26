@@ -1,10 +1,8 @@
 use bevy::prelude::*;
-use bevy_ecs_ldtk::{EntityInstance, TileEnumTags};
+use bevy_ecs_ldtk::{TileEnumTags};
 use bevy_xpbd_2d::math::{Scalar, Vector};
 use bevy_xpbd_2d::prelude::*;
-use leafwing_input_manager::prelude::ActionState;
-use crate::{AnimationIndices, AnimationTimer, Player};
-use crate::character_controller::components::CharacterControllerBundle;
+use crate::{Player};
 use crate::world::components::*;
 
 
@@ -213,7 +211,7 @@ pub fn kill_zone_system(
     kill_zone_query: Query<&CollidingEntities, With<KillZone>>,
     player_query: Query<Entity, With<Player>>
 ) {
-    for (collisions) in kill_zone_query.iter() {
+    for collisions in kill_zone_query.iter() {
         for other in collisions.iter() {
             if player_query.contains(*other) {
                 commands.entity(*other).despawn_recursive();

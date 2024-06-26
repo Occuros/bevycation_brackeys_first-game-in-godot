@@ -1,8 +1,7 @@
 pub mod components;
 mod systems;
 
-use bevy::{ecs::query::Has, prelude::*};
-use bevy_xpbd_2d::{math::*, prelude::*};
+use bevy::{prelude::*};
 use crate::character_controller::systems::*;
 
 pub struct CharacterControllerPlugin;
