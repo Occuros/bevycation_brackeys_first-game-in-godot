@@ -1,4 +1,3 @@
-use bevy::a11y::accesskit::TextAlign::Justify;
 use bevy::prelude::*;
 use bevy::text::{BreakLineOn, Text2dBounds};
 use bevy_ecs_ldtk::{TileEnumTags};
@@ -127,8 +126,7 @@ pub fn setup_score_display_system(
         let box_size = Vec2::new(100.0, 50.0);
 
         commands.entity(entity)
-            .insert((
-                Text2dBundle {
+            .insert(Text2dBundle {
                     transform: transform.clone(),
                     text: Text {
                         sections: vec![TextSection {
@@ -147,8 +145,7 @@ pub fn setup_score_display_system(
                         size: box_size,
                     },
                     ..default()
-                }
-            ));
+                });
     }
 }
 
@@ -159,8 +156,7 @@ pub fn setup_tutorial_text(
 ) {
     for (entity, tutorial_text, transform) in tutorial_text_query.iter() {
         commands.entity(entity)
-            .insert((
-                Text2dBundle {
+            .insert(Text2dBundle {
                     transform: transform.clone(),
                     text: Text::from_sections([
                         TextSection {
@@ -172,8 +168,7 @@ pub fn setup_tutorial_text(
                             },
                         }, ]),
                     ..default()
-                }
-            ));
+                });
     }
 }
 

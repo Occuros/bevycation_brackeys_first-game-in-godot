@@ -1,6 +1,4 @@
-use bevy::math::bounding::RayCast2d;
 use bevy::prelude::*;
-use bevy::utils::info;
 use bevy_spritesheet_animation::prelude::*;
 use bevy_xpbd_2d::prelude::*;
 use crate::enemy::components::{Enemy, MovementDirection, SlimeAnimations};

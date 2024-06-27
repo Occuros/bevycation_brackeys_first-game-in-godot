@@ -1,8 +1,7 @@
 use bevy::prelude::*;
-use bevy::ui::AlignItems::Default;
 use bevy::utils::HashSet;
 use bevy_ecs_ldtk::prelude::*;
-use bevy_ecs_ldtk::utils::{calculate_transform_from_entity_instance, create_entity_definition_map, ldtk_pixel_coords_to_translation_pivoted};
+use bevy_ecs_ldtk::utils::{ldtk_pixel_coords_to_translation_pivoted};
 use bevy_spritesheet_animation::prelude::*;
 use bevy_xpbd_2d::prelude::*;
 
@@ -265,7 +264,6 @@ pub struct TutorialText {
 
 impl TutorialText {
     fn from_field(entity_instance: &EntityInstance) -> Self {
-        info!("gathering text");
         TutorialText {
             text: entity_instance.get_string_field("text").unwrap().to_owned(),
         }

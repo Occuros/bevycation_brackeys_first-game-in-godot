@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy::utils::info;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_spritesheet_animation::prelude::*;
 use bevy_xpbd_2d::math::Scalar;
@@ -145,7 +144,6 @@ pub fn coin_collection_system(
     for (mut inventory, collisions) in player_query.iter_mut() {
         for other in collisions.iter() {
             if coin_query.contains(*other) {
-                info!("we have a coin");
                 commands.entity(*other).despawn_recursive();
                 inventory.collected_coins += 1;
                 coin_collected_event.send(CoinCollected {

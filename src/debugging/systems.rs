@@ -1,10 +1,8 @@
 use bevy::prelude::*;
-use bevy_xpbd_2d::components::LinearVelocity;
 use bevy_xpbd_2d::prelude::PhysicsGizmos;
 use leafwing_input_manager::InputManagerBundle;
 use leafwing_input_manager::prelude::*;
 use crate::debugging::components::DebugAction;
-use crate::Player;
 
 pub fn setup_debugging_system(
     mut commands: Commands,

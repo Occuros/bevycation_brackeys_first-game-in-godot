@@ -48,9 +48,6 @@ pub struct PlayerAnimations {
 
 impl FromWorld for PlayerAnimations {
     fn from_world(world: &mut World) -> Self {
-
-        let sprite_sheet = Spritesheet::new(4, 3);
-
         let asset_server = world.get_resource::<AssetServer>().unwrap();
         let texture = asset_server.load("sprites/knight.png");
         let layout = TextureAtlasLayout::from_grid(Vec2::new(32.0, 32.0), 8, 8, None, None);
@@ -107,6 +104,7 @@ impl FromWorld for PlayerAnimations {
 
 #[derive(Event)]
 pub struct CoinCollected {
+    #[allow(dead_code)]
     pub amount_collected: i32,
     pub total_collected: i32,
 }
