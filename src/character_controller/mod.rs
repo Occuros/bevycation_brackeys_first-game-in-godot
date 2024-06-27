@@ -12,9 +12,9 @@ impl Plugin for CharacterControllerPlugin {
             .add_systems(
                 Update,
                 (
-                    update_grounded,
-                    movement,
-                    apply_movement_damping,
+                    update_grounded_system,
+                    movement_system,
+                    apply_movement_damping_system,
                     activate_pass_through_one_way_platform_system,
                 )
                     .chain(),

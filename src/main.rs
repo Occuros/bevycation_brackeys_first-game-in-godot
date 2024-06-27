@@ -42,7 +42,7 @@ fn main() {
         .add_plugins(WorldPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(EnemyPlugin)
-        .add_systems(Startup, setup)
+        .add_systems(Startup, setup_system)
         .add_systems(Update, zoom_scale_system)
         .add_systems(PostUpdate, camera_follow_player_system.after(PhysicsSet::Sync).before(TransformSystem::TransformPropagate))
         .insert_resource(Msaa::Off)
@@ -61,7 +61,7 @@ pub struct Inventory {
     pub collected_coins: i32,
 }
 
-fn setup(
+fn setup_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     game_sounds: Res<GameSounds>,

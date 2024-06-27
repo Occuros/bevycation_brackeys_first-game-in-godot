@@ -10,7 +10,7 @@ use crate::character_controller::components::*;
 use crate::player::components::*;
 use crate::world::components::*;
 
-pub fn setup_player_input(
+pub fn setup_player_input_system(
     mut commands: Commands,
 ) {
     commands.spawn((

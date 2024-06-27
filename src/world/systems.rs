@@ -9,7 +9,7 @@ use crate::player::components::CoinCollected;
 use crate::world::components::*;
 
 
-pub(crate) fn add_colliders_to_walls(
+pub(crate) fn add_colliders_to_walls_system(
     mut commands: Commands,
     wall_query: Query<Entity, (Added<Wall>, Without<Collider>)>,
 ) {
@@ -28,7 +28,7 @@ pub(crate) fn add_colliders_to_walls(
 }
 
 
-pub fn add_colliders_to_platforms(
+pub fn add_colliders_to_platforms_system(
     mut commands: Commands,
     platform_query: Query<Entity, (Added<Platform>, Without<Collider>)>,
 ) {
@@ -48,7 +48,7 @@ pub fn add_colliders_to_platforms(
 }
 
 
-pub fn add_colliders_to_bridges(
+pub fn add_colliders_to_bridges_system(
     mut commands: Commands,
     platform_query: Query<(Entity, &TileEnumTags), (Added<Bridge>, Without<Collider>)>,
 ) {
@@ -149,7 +149,7 @@ pub fn setup_score_display_system(
     }
 }
 
-pub fn setup_tutorial_text(
+pub fn setup_tutorial_text_system(
     mut commands: Commands,
     game_fonts: Res<GameFonts>,
     tutorial_text_query: Query<(Entity, &TutorialText, &Transform), (Added<TutorialText>, Without<Text>)>,

@@ -4,7 +4,7 @@ use bevy_xpbd_2d::prelude::*;
 use crate::enemy::components::{Enemy, MovementDirection, SlimeAnimations};
 use crate::world::components::{GamePhysicsLayer, KillZone};
 
-pub fn setup_enemy(
+pub fn setup_enemy_system(
     mut commands: Commands,
     slime_animations: Res<SlimeAnimations>,
     enemy_query: Query<(Entity, &Transform), (Added<Enemy>, Without<SpritesheetAnimation>)>,

@@ -11,7 +11,7 @@ use crate::world::components::{IsDead, PassThroughOneWayPlatform};
 
 
 /// Updates the [`Grounded`] status for character controllers.
-pub fn update_grounded(
+pub fn update_grounded_system(
     mut commands: Commands,
     mut query: Query<
         (Entity, &ShapeHits, &Rotation, Option<&MaxSlopeAngle>),
@@ -38,7 +38,7 @@ pub fn update_grounded(
 }
 
 /// Responds to [`MovementAction`] events and moves character controllers accordingly.
-pub fn movement(
+pub fn movement_system(
     time: Res<Time>,
     player_actions_query: Query<&ActionState<PlayerAction>>,
     mut controllers: Query<(
@@ -76,7 +76,9 @@ pub fn movement(
 }
 
 /// Slows down movement in the X direction.
-pub fn apply_movement_damping(mut query: Query<(&MovementDampingFactor, &AirDampingFactor, &mut LinearVelocity, Has<Grounded>)>) {
+pub fn apply_movement_damping_system(
+    mut query: Query<(&MovementDampingFactor, &AirDampingFactor, &mut LinearVelocity, Has<Grounded>)>
+) {
     for (damping_factor, air_damping_factor, mut linear_velocity, is_grounded) in &mut query {
         // We could use `LinearDamping`, but we don't want to dampen movement along the Y axis
         if is_grounded {

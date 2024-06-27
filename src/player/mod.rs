@@ -16,7 +16,7 @@ impl Plugin for PlayerPlugin {
             .add_event::<CoinCollected>()
             .register_type::<InputMap<PlayerAction>>()
             .add_plugins(InputManagerPlugin::<PlayerAction>::default())
-            .add_systems(Startup, setup_player_input)
+            .add_systems(Startup, setup_player_input_system)
             .add_systems(Update, spawn_player_system)
             .add_systems(Update, spawn_player_at_start_system)
             .add_systems(Update, restart_level_on_input_system)
