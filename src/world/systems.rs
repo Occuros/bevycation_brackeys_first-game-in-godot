@@ -1,8 +1,12 @@
+use bevy::a11y::accesskit::TextAlign::Justify;
 use bevy::prelude::*;
+use bevy::text::{BreakLineOn, Text2dBounds};
 use bevy_ecs_ldtk::{TileEnumTags};
+use bevy_spritesheet_animation::component::SpritesheetAnimation;
 use bevy_xpbd_2d::math::{Scalar, Vector};
 use bevy_xpbd_2d::prelude::*;
 use crate::{Player};
+use crate::player::components::CoinCollected;
 use crate::world::components::*;
 
 
@@ -51,7 +55,7 @@ pub fn add_colliders_to_bridges(
 ) {
     let collision_layer = CollisionLayers::new(
         GamePhysicsLayer::Ground,
-        [GamePhysicsLayer::Enemy, GamePhysicsLayer::Player]
+        [GamePhysicsLayer::Enemy, GamePhysicsLayer::Player],
     );
 
     for (entity, enum_tag) in platform_query.iter() {
@@ -85,6 +89,91 @@ pub fn add_colliders_to_bridges(
                     ));
                 }
             });
+    }
+}
+
+pub fn setup_coin_system(
+    mut commands: Commands,
+    coin_animations: Res<CoinAnimations>,
+    coin_query: Query<(Entity, &Transform), (Added<Coin>, Without<SpritesheetAnimation>)>,
+) {
+    for (entity, transform) in coin_query.iter() {
+        commands.entity(entity)
+            .insert((
+                SpriteSheetBundle {
+                    texture: coin_animations.texture.clone_weak(),
+                    atlas: TextureAtlas {
+                        layout: coin_animations.layout.clone_weak(),
+                        ..default()
+                    },
+                    transform: transform.clone(),
+                    ..default()
+                },
+                SpritesheetAnimation::from_id(coin_animations.rotate_animation),
+                RigidBody::Kinematic,
+                Sensor,
+                Collider::circle(5.0),
+                CollisionLayers::new(GamePhysicsLayer::Collectible, [GamePhysicsLayer::Player])
+            ));
+    };
+}
+
+pub fn setup_score_display_system(
+    mut commands: Commands,
+    game_fonts: Res<GameFonts>,
+    display_text_query: Query<(Entity, &Transform), (Added<ScoreDisplay>, Without<Text>)>,
+) {
+    for (entity, transform) in display_text_query.iter() {
+        let box_size = Vec2::new(100.0, 50.0);
+
+        commands.entity(entity)
+            .insert((
+                Text2dBundle {
+                    transform: transform.clone(),
+                    text: Text {
+                        sections: vec![TextSection {
+                            value: "You collected\n0 coins :(".to_owned(),
+                            style: TextStyle {
+                                font_size: 8.0,
+                                font: game_fonts.pixelated_bold_font.clone_weak(),
+                                color: Color::BLACK,
+                            },
+                        }],
+                        justify: JustifyText::Center,
+                        linebreak_behavior: BreakLineOn::WordBoundary,
+                    },
+                    text_2d_bounds: Text2dBounds {
+                        // Wrap text in the rectangle
+                        size: box_size,
+                    },
+                    ..default()
+                }
+            ));
+    }
+}
+
+pub fn setup_tutorial_text(
+    mut commands: Commands,
+    game_fonts: Res<GameFonts>,
+    tutorial_text_query: Query<(Entity, &TutorialText, &Transform), (Added<TutorialText>, Without<Text>)>,
+) {
+    for (entity, tutorial_text, transform) in tutorial_text_query.iter() {
+        commands.entity(entity)
+            .insert((
+                Text2dBundle {
+                    transform: transform.clone(),
+                    text: Text::from_sections([
+                        TextSection {
+                            value: tutorial_text.text.to_owned(),
+                            style: TextStyle {
+                                font_size: 8.0,
+                                font: game_fonts.pixelated_font.clone_weak(),
+                                color: Color::BLACK,
+                            },
+                        }, ]),
+                    ..default()
+                }
+            ));
     }
 }
 
@@ -216,13 +305,47 @@ pub fn move_platforms_system(
 pub fn kill_zone_system(
     mut commands: Commands,
     kill_zone_query: Query<&CollidingEntities, With<KillZone>>,
-    mut player_query: Query<(Entity, &mut CollisionLayers), With<Player>>,
+    mut player_query: Query<(Entity, &mut CollisionLayers), (With<Player>, Without<IsDead>)>,
+    game_sounds: Res<GameSounds>
 ) {
     for collisions in kill_zone_query.iter() {
         for other in collisions.iter() {
             let Ok((_, mut collision_layers)) = player_query.get_mut(*other) else { continue };
             collision_layers.memberships = LayerMask::from(GamePhysicsLayer::Dead);
+
             commands.entity(*other).insert(IsDead);
+            commands.spawn(AudioBundle {
+                source: game_sounds.player_hurt.clone(),
+                settings: PlaybackSettings::DESPAWN,
+            });
         }
+    }
+}
+
+pub fn update_score_display_system(
+    mut coin_collected_events: EventReader<CoinCollected>,
+    mut score_display_query: Query<&mut Text, With<ScoreDisplay>>,
+) {
+    let Ok(mut text) = score_display_query.get_single_mut() else { return };
+    for coin_event in coin_collected_events.read() {
+        let display_text = format!("You collected\n{} coins!", coin_event.total_collected);
+        text.sections[0].value = display_text;
+    }
+    AudioBundle {
+        settings: PlaybackSettings::ONCE,
+        ..default()
+    };
+}
+
+pub fn play_pickup_sound_system(
+    mut commands: Commands,
+    game_sounds: Res<GameSounds>,
+    mut coin_collected_events: EventReader<CoinCollected>,
+) {
+    for _ in coin_collected_events.read() {
+        commands.spawn(AudioBundle {
+            source: game_sounds.coin_collected.clone(),
+            settings: PlaybackSettings::DESPAWN,
+        });
     }
 }

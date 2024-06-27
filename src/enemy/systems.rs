@@ -52,14 +52,10 @@ pub fn setup_enemy(
 }
 
 pub fn enemy_wall_detection_system(
-    mut enemy_query: Query<(Entity, &GlobalTransform, &mut RayCaster, &RayHits, &mut Sprite, &mut MovementDirection), With<Enemy>>,
+    mut enemy_query: Query<(Entity, &mut RayCaster, &RayHits, &mut Sprite, &mut MovementDirection), With<Enemy>>,
     collider_parent: Query<&ColliderParent>,
-    mut gizmos: Gizmos,
 ) {
-    for (entity, transform, mut raycaster, hits, mut sprite, mut movement_direction) in enemy_query.iter_mut() {
-        let end = transform.translation().truncate() + raycaster.origin + *raycaster.direction * raycaster.max_time_of_impact;
-        gizmos.arrow_2d(transform.translation().truncate() + raycaster.origin, end, Color::BLACK);
-
+    for (entity, mut raycaster, hits, mut sprite, mut movement_direction) in enemy_query.iter_mut() {
         for hit in hits.iter() {
             //ignore self collisions with parent rigidbody
             if collider_parent.get(hit.entity).map_or(false, |parent| parent.get() == entity) { continue; }

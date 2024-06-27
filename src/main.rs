@@ -6,6 +6,7 @@ mod enemy;
 
 use bevy::prelude::*;
 use bevy::transform::TransformSystem;
+use bevy::utils::HashSet;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_editor_pls::EditorPlugin;
 use bevy_spritesheet_animation::prelude::SpritesheetAnimationPlugin;
@@ -15,13 +16,13 @@ use crate::character_controller::CharacterControllerPlugin;
 use crate::debugging::DebuggingPlugin;
 use crate::enemy::EnemyPlugin;
 use crate::player::PlayerPlugin;
-use crate::world::components::IsDead;
+use crate::world::components::{GameSounds, IsDead};
 use crate::world::WorldPlugin;
 
 fn main() {
     App::new()
         .register_type::<EntityInstance>()
-        // .insert_resource(Gravity(Vec2::NEG_Y * 100.0))
+        .register_type::<HashSet<Entity>>()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest())) // prevents blurry sprites
         .add_plugins(PhysicsPlugins::default())
         .add_plugins(Shape2dPlugin::default())
@@ -55,10 +56,15 @@ pub struct MainCamera;
 #[derive(Component, Reflect)]
 pub struct Player;
 
+#[derive(Component, Reflect, Default)]
+pub struct Inventory {
+    pub collected_coins: i32,
+}
+
 fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    // painter: ShapeCommands,
+    game_sounds: Res<GameSounds>,
 ) {
     let ldtk_handle = asset_server.load("first_game.ldtk");
     commands.spawn((
@@ -74,6 +80,14 @@ fn setup(
         Camera2dBundle::default(),
         MainCamera,
     ));
+
+    //background music
+    commands.spawn((
+        Name::new("Background Music"),
+        AudioBundle {
+            source: game_sounds.background_music.clone(),
+            ..default()
+        }));
 }
 
 pub fn camera_follow_player_system(

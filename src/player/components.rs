@@ -103,3 +103,10 @@ impl FromWorld for PlayerAnimations {
         }
     }
 }
+
+
+#[derive(Event)]
+pub struct CoinCollected {
+    pub amount_collected: i32,
+    pub total_collected: i32,
+}
