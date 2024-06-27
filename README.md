@@ -1,5 +1,9 @@
 # Bevycation of Brackeys First Game in Godot Tutorial
 
+
+https://github.com/Occuros/bevycation_brackeys_first-game-in-godot/assets/66752261/91ddc9e0-be88-450d-b782-f2eebf15aa5f
+
+
 One of the best creators and an inspiration for many game developers has risen from his slumber and created a fantastic first Godot tutorial which can be found [here](https://www.youtube.com/watch?v=LOhfqjmasi0).
 
 This repo tries to replicate the tutorial content in [bevy](https://bevyengine.org/), as it is one of the best open-source engines, and it's written in Rust 🦀.
