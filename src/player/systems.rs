@@ -62,9 +62,9 @@ pub fn spawn_player_system(
         )).with_children(|commands| {
             commands.spawn((
                 SpriteSheetBundle {
-                    texture: player_animation.texture.clone_weak(),
+                    texture: player_animation.texture.clone(),
                     atlas: TextureAtlas {
-                        layout: player_animation.layout.clone_weak(),
+                        layout: player_animation.layout.clone(),
                         ..default()
                     },
                     transform: Transform::from_xyz(0.0, 4.2, 0.0),

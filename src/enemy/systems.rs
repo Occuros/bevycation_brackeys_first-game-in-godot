@@ -13,9 +13,9 @@ pub fn setup_enemy_system(
         commands.entity(entity)
             .insert((
                 SpriteSheetBundle {
-                    texture: slime_animations.texture.clone_weak(),
+                    texture: slime_animations.texture.clone(),
                     atlas: TextureAtlas {
-                        layout: slime_animations.layout.clone_weak(),
+                        layout: slime_animations.layout.clone(),
                         ..default()
                     },
                     transform: transform.clone(),
