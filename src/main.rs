@@ -46,7 +46,7 @@ fn main() {
         .add_systems(Update, zoom_scale_system)
         .add_systems(PostUpdate, camera_follow_player_system.after(PhysicsSet::Sync).before(TransformSystem::TransformPropagate))
         .insert_resource(Msaa::Off)
-
+        .insert_resource(GlobalVolume::new(0.2))
         .run();
 }
 

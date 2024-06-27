@@ -82,7 +82,7 @@ impl FromWorld for PlayerAnimations {
         });
 
         let jump_clip_id = library.new_clip(|clip| {
-            clip.push_frame_indices(sprite_sheet.positions([(5, 3)]));
+            clip.push_frame_indices(sprite_sheet.positions([(6, 3)]));
         });
 
         let jump_animation_id = library.new_animation(|animation| {
